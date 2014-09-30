@@ -1,0 +1,85 @@
+#!/usr/bin/env python
+
+import sys
+from os.path import expanduser
+import urllib2
+import xml.etree.ElementTree as ET
+import datetime
+from optparse import OptionParser
+
+usage = "usage: %prog [user] [options]"
+parser = OptionParser(usage=usage)
+
+parser.add_option("-p", "--penalties",
+                  action="store_true", dest="show_penalties",
+                  help="Display user's penalties")
+
+parser.add_option("-i", "--items",
+                  action="store_true", dest="show_items",
+                  help="Display user's items")
+
+(options, args) = parser.parse_args()
+
+user = ''
+try:
+    home = expanduser("~")
+    with open(home + "/.idlerpguser") as userfile:
+        user = userfile.read()
+except (EOFError, IOError) as e:
+    user = ''
+
+if args:
+    user = args[0]
+
+if not user:
+    print "Either specify a username or put a default username in ~/.idlerpguser"
+    sys.exit(1)
+
+url = "http://xethron.lolhosting.net/xml.php?player={0}".format(user)
+
+response = urllib2.urlopen(url)
+xml = response.read()
+player = ET.fromstring(xml)
+
+if not player.find('username').text:
+    print "Not a valid username"
+    sys.exit(1)
+
+def parse_ttl(seconds):
+    return str(datetime.timedelta(seconds=int(seconds)))
+
+def parse_align(alignment):
+    if alignment == 'g':
+        return "Good"
+    elif alignment == 'e':
+        return "Evil"
+    else:
+        return "Neutral"
+
+print """{0}
+Class: {1}
+Level: {2}
+Time to next level: {3}
+Online: {4}
+x-position: {5}
+y-position: {6}
+Allignment: {7}""".format(player.find('username').text,
+                          player.find('class').text,
+                          player.find('level').text,
+                          parse_ttl(player.find('ttl').text),
+                          bool(player.find('online').text),
+                          player.find('xpos').text,
+                          player.find('ypos').text,
+                          parse_align(player.find('alignment').text))
+
+if options.show_penalties:
+    print "\nPenalties:"
+    penalties = player.find('penalties')
+    for penalty in penalties:
+        print "{0}: {1}".format(penalty.tag, penalty.text)
+
+if options.show_items:
+    print "\nItems:"
+    items = player.find('items')
+    for item in items:
+        print "{0}: {1}".format(item.tag, item.text)
