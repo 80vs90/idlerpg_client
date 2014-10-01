@@ -49,6 +49,13 @@ if not player.find('username').text:
     print "Not a valid username"
     sys.exit(1)
 
+mod_url = "http://xethron.lolhosting.net/playerview.php?player={0}"
+mod_url = mod_url.format(user)
+response = urllib2.urlopen(mod_url).read()
+
+pattern = re.compile("(\[\d+/\d+/\d+ \d{2}:\d{2}:\d{2}\])(.*\.)")
+recent = re.findall(pattern, response)
+
 def parse_ttl(seconds):
     return str(datetime.timedelta(seconds=int(seconds)))
 
@@ -60,43 +67,36 @@ def parse_align(alignment):
     else:
         return "Neutral"
 
-mod_url = "http://xethron.lolhosting.net/playerview.php?player={0}"
-mod_url = mod_url.format(user)
-response = urllib2.urlopen(mod_url).read()
-
-pattern = re.compile("\[\d+/\d+/\d+.*\.")
-recent = re.findall(pattern, response)
-
-
-print """{0}
-Class: {1}
-Level: {2}
-Time to next level: {3}
-Online: {4}
-x-position: {5}
-y-position: {6}
-Allignment: {7}""".format(player.find('username').text,
-                          player.find('class').text,
-                          player.find('level').text,
-                          parse_ttl(player.find('ttl').text),
-                          bool(player.find('online').text),
-                          player.find('xpos').text,
-                          player.find('ypos').text,
-                          parse_align(player.find('alignment').text))
+print """\033[1m{0}\033[0m
+\033[4mClass\033[0m: {1}
+\033[4mLevel\033[0m: {2}
+\033[4mTime to next level\033[0m: {3}
+\033[4mOnline\033[0m: {4}
+\033[4mx-position\033[0m: {5}
+\033[4my-position\033[0m: {6}
+\033[4mAllignment\033[0m: {7}""".format(player.find('username').text,
+                                        player.find('class').text,
+                                        player.find('level').text,
+                                        parse_ttl(player.find('ttl').text),
+                                        bool(player.find('online').text),
+                                        player.find('xpos').text,
+                                        player.find('ypos').text,
+                                        parse_align(player.find('alignment').text))
 
 if options.show_penalties:
-    print "\nPenalties:"
+    print "\n\033[4mPenalties\033[0m:"
     penalties = player.find('penalties')
     for penalty in penalties:
         print "{0}: {1}".format(penalty.tag, penalty.text)
 
 if options.show_items:
-    print "\nItems:"
+    print "\n\033[4mItems\033[0m:"
     items = player.find('items')
     for item in items:
         print "{0}: {1}".format(item.tag, item.text)
 
 # Ha! Fooled you! More Recent Modifier stuff here
+print ''
 for r in recent:
-    print(r)
+    print " * \033[41m\033[37m{0}\033[0m {1}".format(r[0], r[1])
 # All done for reals this time.
