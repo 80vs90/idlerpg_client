@@ -38,29 +38,23 @@ if not user:
 
 url = "http://xethron.lolhosting.net/xml.php?player={0}".format(user)
 
-# Recent Modifiers
-# This code was placed here so that all text could appear at once
 response = urllib2.urlopen(url)
 xml = response.read()
 player = ET.fromstring(xml)
-mod_url = "http://xethron.lolhosting.net/playerview.php?player={0}"
-mod_url = mod_url.format(user)
-response = urllib2.urlopen(mod_url).read()
-
-pattern = re.compile("\[\d+/\d+/\d+.*\.")
-recent = re.findall(pattern, response)
-# End recent modifiers
 
 if not player.find('username').text:
     print "Not a valid username"
     sys.exit(1)
 
+# Recent Modifiers
+# This code was placed here so that all text could appear at once
 mod_url = "http://xethron.lolhosting.net/playerview.php?player={0}"
 mod_url = mod_url.format(user)
 response = urllib2.urlopen(mod_url).read()
 
 pattern = re.compile("(\[\d+/\d+/\d+ \d{2}:\d{2}:\d{2}\])(.*\.)")
 recent = re.findall(pattern, response)
+# End recent modifiers
 
 def parse_ttl(seconds):
     return str(datetime.timedelta(seconds=int(seconds)))
