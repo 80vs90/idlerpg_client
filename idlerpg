@@ -6,6 +6,7 @@ import urllib2
 import xml.etree.ElementTree as ET
 import datetime
 from optparse import OptionParser
+import re
 
 usage = "usage: %prog [user] [options]"
 parser = OptionParser(usage=usage)
@@ -37,9 +38,12 @@ if not user:
 
 url = "http://xethron.lolhosting.net/xml.php?player={0}".format(user)
 
+# Recent Modifiers
+# This code was placed here so that all text could appear at once
 response = urllib2.urlopen(url)
 xml = response.read()
 player = ET.fromstring(xml)
+# End recent modifiers
 
 if not player.find('username').text:
     print "Not a valid username"
@@ -55,6 +59,14 @@ def parse_align(alignment):
         return "Evil"
     else:
         return "Neutral"
+
+mod_url = "http://xethron.lolhosting.net/playerview.php?player={0}"
+mod_url = mod_url.format(user)
+response = urllib2.urlopen(mod_url).read()
+
+pattern = re.compile("\[\d+/\d+/\d+.*\.")
+recent = re.findall(pattern, response)
+
 
 print """{0}
 Class: {1}
@@ -83,3 +95,8 @@ if options.show_items:
     items = player.find('items')
     for item in items:
         print "{0}: {1}".format(item.tag, item.text)
+
+# Ha! Fooled you! More Recent Modifier stuff here
+for r in recent:
+    print(r)
+# All done for reals this time.
