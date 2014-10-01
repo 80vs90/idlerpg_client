@@ -43,6 +43,12 @@ url = "http://xethron.lolhosting.net/xml.php?player={0}".format(user)
 response = urllib2.urlopen(url)
 xml = response.read()
 player = ET.fromstring(xml)
+mod_url = "http://xethron.lolhosting.net/playerview.php?player={0}"
+mod_url = mod_url.format(user)
+response = urllib2.urlopen(mod_url).read()
+
+pattern = re.compile("\[\d+/\d+/\d+.*\.")
+recent = re.findall(pattern, response)
 # End recent modifiers
 
 if not player.find('username').text:
@@ -59,14 +65,6 @@ def parse_align(alignment):
         return "Evil"
     else:
         return "Neutral"
-
-mod_url = "http://xethron.lolhosting.net/playerview.php?player={0}"
-mod_url = mod_url.format(user)
-response = urllib2.urlopen(mod_url).read()
-
-pattern = re.compile("\[\d+/\d+/\d+.*\.")
-recent = re.findall(pattern, response)
-
 
 print """{0}
 Class: {1}
