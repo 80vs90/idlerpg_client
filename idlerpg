@@ -78,7 +78,7 @@ print """\033[1m{0}\033[0m
                                         player.find('class').text,
                                         player.find('level').text,
                                         parse_ttl(player.find('ttl').text),
-                                        bool(player.find('online').text),
+                                        bool(int(player.find('online').text)),
                                         player.find('xpos').text,
                                         player.find('ypos').text,
                                         parse_align(player.find('alignment').text))
